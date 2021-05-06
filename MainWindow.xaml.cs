@@ -21,22 +21,34 @@ namespace SnakeGameWPF
     public partial class MainWindow : Window
     {
         const int SnakeSquareSize = 20;
+        const int SnakeStartLength = 3;
+        const int SnakeStartSpeed = 400;
+        const int SnakeSpeedThreshold = 100;
 
-        private SolidColorBrush snakeBodyBrush = Brushes.Red;
-        private SolidColorBrush snakeHeadBrush = Brushes.LightSalmon;
+        private SolidColorBrush snakeBodyBrush = Brushes.BlueViolet;
+        private SolidColorBrush snakeHeadBrush = Brushes.Blue;
         private List<SnakePart> snakeParts = new List<SnakePart>();
         public enum SnakeDirection { Left, Right, Up, Down };
         private SnakeDirection snakeDirection = SnakeDirection.Right;
         private int snakeLength;
 
+        private System.Windows.Threading.DispatcherTimer gameTickTimer = new System.Windows.Threading.DispatcherTimer();
+
         public MainWindow()
         {
             InitializeComponent();
+            gameTickTimer.Tick += GameTickTimer_Tick;
+        }
+
+        private void GameTickTimer_Tick(object sender, EventArgs e)
+        {
+            MoveSnake();
         }
 
         private void Window_ContentRendered(object sender, EventArgs e)
         {
             DrawGameArea();
+            StartNewGame();
         }
 
         private void DrawGameArea()
@@ -139,6 +151,20 @@ namespace SnakeGameWPF
             DrawSnake();
             // We'll get to this later...  
             //DoCollisionCheck();          
+        }
+
+        private void StartNewGame()
+        {
+            snakeLength = SnakeStartLength;
+            snakeDirection = SnakeDirection.Right;
+            snakeParts.Add(new SnakePart() { Position = new Point(SnakeSquareSize * 5, SnakeSquareSize * 5) });
+            gameTickTimer.Interval = TimeSpan.FromMilliseconds(SnakeStartSpeed);
+
+            // Draw the snake  
+            DrawSnake();
+
+            // Go!          
+            gameTickTimer.IsEnabled = true;
         }
     }
 }
