@@ -25,6 +25,8 @@ namespace SnakeGameWPF
         const int SnakeStartSpeed = 400;
         const int SnakeSpeedThreshold = 100;
 
+        private Random rnd = new Random();
+
         private SolidColorBrush snakeBodyBrush = Brushes.BlueViolet;
         private SolidColorBrush snakeHeadBrush = Brushes.Blue;
         private List<SnakePart> snakeParts = new List<SnakePart>();
@@ -32,8 +34,11 @@ namespace SnakeGameWPF
         private SnakeDirection snakeDirection = SnakeDirection.Right;
         private int snakeLength;
 
-        private System.Windows.Threading.DispatcherTimer gameTickTimer = new System.Windows.Threading.DispatcherTimer();
+        private UIElement snakeFood = null;
+        private SolidColorBrush foodBrush = Brushes.Red;
 
+        private System.Windows.Threading.DispatcherTimer gameTickTimer = new System.Windows.Threading.DispatcherTimer();
+                
         public MainWindow()
         {
             InitializeComponent();
@@ -85,6 +90,7 @@ namespace SnakeGameWPF
                     doneDrawingBackground = true;
             }
         }
+
         private void DrawSnake()
         {
             foreach (SnakePart snakePart in snakeParts)
@@ -162,9 +168,41 @@ namespace SnakeGameWPF
 
             // Draw the snake  
             DrawSnake();
+            DrawSnakeFood();
 
             // Go!          
             gameTickTimer.IsEnabled = true;
         }
+
+        private Point GetNextFoodPosition()
+        {
+            int maxX = (int)(GameArea.ActualWidth / SnakeSquareSize);
+            int maxY = (int)(GameArea.ActualHeight / SnakeSquareSize);
+            int foodX = rnd.Next(0, maxX) * SnakeSquareSize;
+            int foodY = rnd.Next(0, maxY) * SnakeSquareSize;
+
+            foreach (SnakePart snakePart in snakeParts)
+            {
+                if ((snakePart.Position.X == foodX) && (snakePart.Position.Y == foodY))
+                    return GetNextFoodPosition();
+            }
+
+            return new Point(foodX, foodY);
+        }
+
+        private void DrawSnakeFood()
+        {
+            Point foodPosition = GetNextFoodPosition();
+            snakeFood = new Ellipse()
+            {
+                Width = SnakeSquareSize,
+                Height = SnakeSquareSize,
+                Fill = foodBrush
+            };
+            GameArea.Children.Add(snakeFood);
+            Canvas.SetTop(snakeFood, foodPosition.Y);
+            Canvas.SetLeft(snakeFood, foodPosition.X);
+        }
     }
 }
+
